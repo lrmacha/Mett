@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+Created on Mon Feb  3 14:13:24 2025
+
+@author: LRMacha
+"""
+
+# -*- coding: utf-8 -*-
+"""
 Created on Mon Feb  3 11:17:06 2025
 @author: LRMacha
 """
@@ -31,32 +38,44 @@ z_score = abs(stat / np.sqrt(N))  # Approximate Z from W
 r = z_score / np.sqrt(N)
 print(f"Effect Size (r): {r}")
 
-# Create Boxplot with labeled axes and annotations
-plt.figure(figsize=(6, 4))
-sns.boxplot(data=df)
-plt.xlabel("Time (hours)")
-plt.ylabel("CFU")
-plt.text(0.5, max(df.max()) * 0.9, f"P-value: {p_value:.4f}\nEffect Size (r): {r:.4f}", 
-         horizontalalignment='left', fontsize=12, color='black')
-plt.show()
-
 # Calculate correlation coefficient and p-value for the scatter plot
 corr_coef, corr_p_value = pearsonr(df["24h"], df["48h"])
 
-# Format p-value for small values
-if corr_p_value < 0.0001:
+
+
+
+
+#Format p-value for small values
+if p_value < 0.0001:
     p_value_text = f"p < 0.0001"
 else:
-    p_value_text = f"p = {corr_p_value:.4f}"
+    p_value_text = f"p = {p_value:.4f}"
 
-# Scatter plot with correlation coefficient and p-value annotation
-plt.figure(figsize=(6, 4))
-sns.scatterplot(x=df["24h"], y=df["48h"])
-plt.xlabel("24h")
-plt.ylabel("48h")
 
-# Annotate correlation coefficient and p-value
-plt.text(0.5, max(df["48h"]) * 0.9, f"r = {corr_coef:.4f}\n{p_value_text}", 
+
+# Create a figure with two subplots (side by side)
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))  # 1 row, 2 columns
+
+# Boxplot in the first subplot
+sns.boxplot(data=df, ax=ax1)
+ax1.set_xlabel("Time (hours)")
+ax1.set_ylabel("CFU")
+ax1.text(0.5, max(df.max()) * 0.9, f"P-value: {p_value:.4f}\nEffect Size (r): {r:.4f}",
          horizontalalignment='left', fontsize=12, color='black')
 
+
+# Scatter plot in the second subplot
+sns.scatterplot(x=df["24h"], y=df["48h"], ax=ax2)
+ax2.set_xlabel("24h")
+ax2.set_ylabel("48h")
+ax2.text(0.5, max(df["48h"]) * 0.9, f"r = {corr_coef:.4f}\n{p_value_text}",
+         horizontalalignment='left', fontsize=12, color='black')
+
+
+# Save the figure as .jpg or .tiff
+plt.savefig("combined_plots.jpg", dpi=300)  # For JPG format
+# plt.savefig("combined_plots.tiff", dpi=300)  # For TIFF format (uncomment this line if you prefer TIFF)
+
+# Show the plots
+plt.tight_layout()  # Adjust spacing between subplots for better layout
 plt.show()
