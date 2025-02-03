@@ -1,6 +1,10 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import scipy.stats as stats
+from statsmodels.stats.multicomp import pairwise_tukeyhsd
+import scikit_posthocs as sp
+import numpy as np
 
 # Data
 data = {
@@ -11,39 +15,72 @@ data = {
 
 df = pd.DataFrame(data)
 
-# Calculate descriptive statistics
-summary_stats = df.describe()
-print(summary_stats)
-
-# Create boxplot to visualize variability
-plt.figure(figsize=(8, 6))
-sns.boxplot(data=df, palette="Set2")
-plt.ylabel("Colony Forming Units")
-plt.xlabel("Sites")
-plt.grid(axis="y")
-
-# Save boxplot as JPEG
-plt.savefig("boxplot1.jpeg", format="jpeg", dpi=300)
-
-# Show the plot
-plt.show()
-
-
-# Convert data to long format for easier plotting
+# Convert data to long format for easier statistical testing
 df["Repeat"] = list(range(1, 30))  # Add repeat numbers
 df_long = df.melt(id_vars=["Repeat"], var_name="Site", value_name="Colony Forming Units")
 
-# Create scatter plot
-plt.figure(figsize=(10, 6))
-sns.scatterplot(data=df_long, x="Repeat", y="Colony Forming Units", hue="Site", palette="Set1", s=100, edgecolor="black")
+# Normality check (Shapiro-Wilk test for each site)
+normality_pvalues = {site: stats.shapiro(df[site])[1] for site in ["Site 1", "Site 2", "Site 3"]}
 
-plt.xlabel("Repeat Number")
-plt.ylabel("Colony Forming Units")
-plt.legend(title="Site")
-plt.grid(True)
+# Use ANOVA if data is normal, otherwise Kruskal-Wallis
+if all(p > 0.05 for p in normality_pvalues.values()):
+    stat, p_value = stats.f_oneway(df["Site 1"], df["Site 2"], df["Site 3"])
+    test_type = "ANOVA"
+    # Pairwise comparisons using Tukey's HSD for ANOVA
+    pairwise_comparisons = pairwise_tukeyhsd(df_long["Colony Forming Units"], df_long["Site"], alpha=0.05)
+else:
+    stat, p_value = stats.kruskal(df["Site 1"], df["Site 2"], df["Site 3"])
+    test_type = "Kruskal-Wallis"
+    pairwise_comparisons = sp.posthoc_dunn(df[["Site 1", "Site 2", "Site 3"]].values.T, p_adjust="bonferroni")
 
-# Save scatter plot as JPEG
-plt.savefig("scatter_plot1.jpeg", format="jpeg", dpi=300)
+# Create a figure with two subplots side by side
+fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+
+# Scatter plot (Left)
+sns.scatterplot(data=df_long, x="Repeat", y="Colony Forming Units", hue="Site", palette="Set1", s=100, edgecolor="black", ax=axes[0])
+axes[0].axhline(y=10, color='black', linestyle='dashed', linewidth=1)  # Dashed line at 10 CFU
+axes[0].set_xlabel("Repeat Number")
+axes[0].set_ylabel("Colony Forming Units")
+axes[0].legend(title="Site")
+axes[0].grid(False)  # Remove gridlines
+
+# Boxplot (Right)
+sns.boxplot(data=df[["Site 1", "Site 2", "Site 3"]], palette="Set2", ax=axes[1])
+axes[1].set_xlabel("Sites")
+axes[1].set_ylabel("Colony Forming Units")
+axes[1].grid(axis="y")
+
+# Annotate only significant pairwise comparisons with connector lines
+if pairwise_comparisons is not None:
+    comparisons = pairwise_comparisons
+    sites = ["Site 1", "Site 2", "Site 3"]
+    y_pos = max(df_long["Colony Forming Units"]) * 0.8  # Adjust the starting position for p-value annotation, lower than before
+    
+    # Iterate through each pairwise comparison
+    for i, site1 in enumerate(sites):
+        for j, site2 in enumerate(sites):
+            if i < j:  # Only unique pairs
+                pval = comparisons.iloc[i, j]  # Get p-value for the pair
+                
+                # Only show if the p-value is significant
+                if pval < 0.05:
+                    # Coordinates for the connector lines
+                    x1 = i
+                    x2 = j
+                    y_line = y_pos - 0.05 * (i + j)  # Adjust the vertical position of the line
+                    
+                    # Draw a connector line between the boxplots (shorter line)
+                    axes[1].plot([x1 + 0.1, x2 - 0.1], [y_line, y_line], color='black', lw=1.5)
+                    
+                    # Annotate the p-value above the connector line
+                    axes[1].text((x1 + x2) / 2, y_line + 0.02, f"p = {pval:.4f}", ha='center', va='bottom', fontsize=10, color='black')
+                    y_pos -= 0.1  # Adjust y_pos downward for the next comparison
+
+# Adjust layout
+plt.tight_layout()
+
+# Save as JPEG
+plt.savefig("combined_plot_with_shorter_lines.jpeg", format="jpeg", dpi=300)
 
 # Show the plot
 plt.show()
