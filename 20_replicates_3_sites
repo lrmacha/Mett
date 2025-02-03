@@ -1,0 +1,49 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Data
+data = {
+    "Site 1": [5, 9, 4, 5, 6, 7, 9, 5, 7, 9, 7, 9, 4, 6, 8, 2, 5, 15, 41, 34, 14, 15, 24, 9, 13, 16, 14, 20, 17],
+    "Site 2": [3, 4, 9, 22, 6, 13, 23, 20, 18, 18, 13, 50, 12, 15, 10, 19, 46, 14, 34, 11, 19, 20, 19, 16, 16, 26, 20, 65, 17],
+    "Site 3": [7, 2, 10, 12, 11, 11, 11, 10, 10, 2, 13, 6, 16, 8, 15, 15, 20, 14, 11, 15, 18, 18, 14, 11, 12, 7, 9, 9, 16],
+}
+
+df = pd.DataFrame(data)
+
+# Calculate descriptive statistics
+summary_stats = df.describe()
+print(summary_stats)
+
+# Create boxplot to visualize variability
+plt.figure(figsize=(8, 6))
+sns.boxplot(data=df, palette="Set2")
+plt.ylabel("Colony Forming Units")
+plt.xlabel("Sites")
+plt.grid(axis="y")
+
+# Save boxplot as JPEG
+plt.savefig("boxplot1.jpeg", format="jpeg", dpi=300)
+
+# Show the plot
+plt.show()
+
+
+# Convert data to long format for easier plotting
+df["Repeat"] = list(range(1, 30))  # Add repeat numbers
+df_long = df.melt(id_vars=["Repeat"], var_name="Site", value_name="Colony Forming Units")
+
+# Create scatter plot
+plt.figure(figsize=(10, 6))
+sns.scatterplot(data=df_long, x="Repeat", y="Colony Forming Units", hue="Site", palette="Set1", s=100, edgecolor="black")
+
+plt.xlabel("Repeat Number")
+plt.ylabel("Colony Forming Units")
+plt.legend(title="Site")
+plt.grid(True)
+
+# Save scatter plot as JPEG
+plt.savefig("scatter_plot1.jpeg", format="jpeg", dpi=300)
+
+# Show the plot
+plt.show()
