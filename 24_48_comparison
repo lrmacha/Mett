@@ -1,0 +1,62 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Feb  3 11:17:06 2025
+@author: LRMacha
+"""
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy.stats import wilcoxon, pearsonr
+
+# Load Excel file
+file_path = "C:/Users/lrmacha/Downloads/Book1.xlsx"  # Update with your file path
+df = pd.read_excel(file_path)
+
+# Rename columns for easier access
+df.columns = ["24h", "48h"]
+
+# Display first few rows and summary statistics
+print(df.head())
+print(df.describe())
+
+# Perform Wilcoxon signed-rank test
+stat, p_value = wilcoxon(df["24h"], df["48h"])
+print(f"Wilcoxon Test Statistic: {stat}, P-value: {p_value}")
+
+# Compute effect size r
+N = len(df)  # Total number of pairs
+z_score = abs(stat / np.sqrt(N))  # Approximate Z from W
+r = z_score / np.sqrt(N)
+print(f"Effect Size (r): {r}")
+
+# Create Boxplot with labeled axes and annotations
+plt.figure(figsize=(6, 4))
+sns.boxplot(data=df)
+plt.xlabel("Time (hours)")
+plt.ylabel("CFU")
+plt.text(0.5, max(df.max()) * 0.9, f"P-value: {p_value:.4f}\nEffect Size (r): {r:.4f}", 
+         horizontalalignment='left', fontsize=12, color='black')
+plt.show()
+
+# Calculate correlation coefficient and p-value for the scatter plot
+corr_coef, corr_p_value = pearsonr(df["24h"], df["48h"])
+
+# Format p-value for small values
+if corr_p_value < 0.0001:
+    p_value_text = f"p < 0.0001"
+else:
+    p_value_text = f"p = {corr_p_value:.4f}"
+
+# Scatter plot with correlation coefficient and p-value annotation
+plt.figure(figsize=(6, 4))
+sns.scatterplot(x=df["24h"], y=df["48h"])
+plt.xlabel("24h")
+plt.ylabel("48h")
+
+# Annotate correlation coefficient and p-value
+plt.text(0.5, max(df["48h"]) * 0.9, f"r = {corr_coef:.4f}\n{p_value_text}", 
+         horizontalalignment='left', fontsize=12, color='black')
+
+plt.show()
