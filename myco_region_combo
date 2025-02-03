@@ -1,0 +1,69 @@
+import geopandas as gpd
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load the shapefile (GeoJSON or Shapefile)
+shapefile_path = 'C:/Users/lrmacha/Downloads/united-kingdom-regions.geojson'  # Change this to your file path
+gdf = gpd.read_file(shapefile_path)
+
+# Create the dataframe with positive case numbers for each region
+region_data = {
+    'Region': ['East Midlands', 'East of England', 'London', 'North East', 'North West', 'Scotland', 'South East', 'South West', 'Wales', 'West Midlands'],
+    'Positive': [15, 98, 82, 30, 66, 9, 107, 56, 48, 21],
+}
+
+df_region = pd.DataFrame(region_data)
+
+# Merge the shapefile dataframe with your region data
+gdf = gdf.merge(df_region, left_on='name', right_on='Region', how='left')
+
+# Remove regions with no match (those that have NaN in 'Positive' column)
+gdf = gdf.dropna(subset=['Positive'])
+
+# Create DataFrame for the positive percentage data
+data_percentage = {
+    'Region': ['East Midlands', 'East of England', 'London', 'North East England', 'North West England', 'Scotland', 'South East England', 'South West England', 'Wales', 'West Midlands'],
+    'Positive': [15, 98, 82, 30, 66, 9, 107, 56, 48, 21],
+    'Total': [362, 1126, 1631, 892, 2368, 112, 2174, 1076, 1350, 760]
+}
+
+df_percentage = pd.DataFrame(data_percentage)
+
+# Calculate the percentage of positive cases
+df_percentage['Positive Percentage'] = (df_percentage['Positive'] / df_percentage['Total']) * 100
+
+# Create a combined plot with 2 subplots: one for the map and one for the bar chart
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 8))  # 1 row, 2 columns
+
+# Plot the map on the first subplot (ax1)
+gdf.boundary.plot(ax=ax1)
+gdf.plot(column='Positive', ax=ax1, legend=True,
+         legend_kwds={'label': "Number of Positive Cases by Region",
+                      'orientation': "horizontal"})
+
+# Add region labels at the centroids
+for idx, row in gdf.iterrows():
+    centroid = row['geometry'].centroid
+    ax1.text(centroid.x, centroid.y, row['Region'], fontsize=10, ha='center', color='black')
+
+# Customize the map plot
+ax1.set_xlabel('Longitude', fontsize=12)
+ax1.set_ylabel('Latitude', fontsize=12)
+ax1.set_title('UK Regions - Mycobacteria Positive Cases')
+
+# Plot the bar chart on the second subplot (ax2)
+sns.barplot(x='Positive Percentage', y='Region', data=df_percentage, palette='viridis', ax=ax2)
+
+# Remove title and add labels for the bar chart
+ax2.set_xlabel('Positive Percentage (%)', fontsize=12)
+ax2.set_ylabel('Region', fontsize=12)
+ax2.set_title('Positive Percentage of Mycobacteria Cases')
+
+# Save the combined plot as a JPEG file
+output_path = 'C:/Users/lrmacha/Downloads/combined_uk_map_and_percentage.jpeg'  # Change this to your desired path
+plt.tight_layout()
+plt.savefig(output_path, format='jpeg', dpi=300)
+
+# Show the combined plot
+plt.show()
