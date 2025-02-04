@@ -1,0 +1,40 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import scikit_posthocs as sp
+
+# Load the data
+file_path = r"C:/Users/lrmacha/Downloads/Friedmann_Figure.xlsx"
+sheet_name = 1  # Sheet 2 (Python uses zero-based indexing)
+df = pd.read_excel(file_path, sheet_name=sheet_name)
+
+# Extract relevant columns
+columns = [
+    "TVC 30˚C 48h", "TVC 30˚C 72h",
+    "TVC 35˚C 48h", "TVC 35˚C 72h",
+    "Blood Agar 37˚C 48h", "Blood Agar 37˚C 120h",
+    "R2A Agar 30˚C 48h", "R2A Agar 30˚C 120h"
+]
+data = df[columns]
+
+# Perform post-hoc pairwise Nemenyi test
+post_hoc = sp.posthoc_nemenyi_friedman(data.values)
+
+# Create a figure with 2 subplots, side by side
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+
+# Boxplot visualization (left plot)
+sns.boxplot(data=data, palette="Set2", ax=ax1)
+ax1.set_ylabel("Colony Forming Units")
+ax1.set_xticklabels(ax1.get_xticklabels(), rotation=45, ha='right')
+
+# Heatmap visualization (right plot)
+sns.heatmap(post_hoc, annot=True, cmap="coolwarm", fmt=".3f", vmin=0, vmax=1, 
+            xticklabels=columns, yticklabels=columns, ax=ax2)
+ax2.set_title("Pairwise Comparisons (Nemenyi Test) - P-values")
+ax2.set_xlabel("Condition")
+ax2.set_ylabel("Condition")
+
+# Adjust layout to ensure everything fits nicely
+plt.tight_layout()
+plt.show()
