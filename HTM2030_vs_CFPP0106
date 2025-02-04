@@ -1,0 +1,79 @@
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+from io import StringIO
+from scipy.stats import shapiro, ttest_ind, mannwhitneyu
+
+# Provided data
+data = """HTM2030\tCFPP0106
+0\t0
+0\t0
+0\t0
+0\t0
+0\t0
+0\t0
+0\t0
+0\t0
+0\t0
+0\t0
+0\t0
+0\t0
+1\t0
+4\t153
+4\t33
+26\t0
+13\t60
+85\t100
+7\t50
+1\t75
+9\t55
+"""
+
+# Read the data into a pandas DataFrame
+df = pd.read_csv(StringIO(data), sep='\t')
+
+# Check if the data is normally distributed using the Shapiro-Wilk test
+stat_htm2030, p_htm2030 = shapiro(df['HTM2030'])
+stat_cfpp0106, p_cfpp0106 = shapiro(df['CFPP0106'])
+
+# Perform t-test or Mann-Whitney U test based on normality test results
+if p_htm2030 > 0.05 and p_cfpp0106 > 0.05:
+    # Both distributions are normal, perform t-test
+    stat_test, p_value = ttest_ind(df['HTM2030'], df['CFPP0106'])
+    test_name = 't-test'
+else:
+    # At least one distribution is not normal, perform Mann-Whitney U test
+    stat_test, p_value = mannwhitneyu(df['HTM2030'], df['CFPP0106'])
+    test_name = 'Mann-Whitney U test'
+
+# Plot the data using seaborn box plots to visualize the distribution of colony forming units under each protocol
+plt.figure(figsize=(10, 6))
+ax = sns.boxplot(data=df)
+plt.xlabel('Protocol')
+plt.ylabel('Colony Forming Units')
+
+
+# Add p-value to the plot with connector lines
+x1, x2 = 0, 1   # Columns to be compared
+y, h, col = df.max().max() + 10, 10, 'k'
+plt.plot([x1, x1, x2, x2], [y, y+h, y+h, y], lw=1.5, c=col)
+plt.text((x1+x2)*.5, y+h, f"{test_name} p-value: {p_value:.4f}", ha='center', va='bottom', color=col)
+
+plt.show()
+
+# Print summary statistics for each protocol and test results
+summary_stats = df.describe()
+print("Summary Statistics for HTM2030:")
+print(summary_stats['HTM2030'])
+print("\nSummary Statistics for CFPP0106:")
+print(summary_stats['CFPP0106'])
+print(f"\n{test_name} p-value: {p_value:.4f}")
+
+
+#This code will:
+#1. Check if the data is normally distributed using the Shapiro-Wilk test.
+#2. Perform either a t-test or Mann-Whitney U test based on the normality test results.
+#3. Plot the data using Seaborn box plots, add the p-value to the plot with connector lines, and print the summary statistics for each protocol.
+
+#If you have any further questions or need additional assistance, feel free to ask!
