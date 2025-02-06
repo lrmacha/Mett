@@ -1,0 +1,46 @@
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+
+# Creating the DataFrame from the user's dataset
+columns = ["HTM_2022_0106", "HTM_2013_2030", "HTM_2013_0106", "HTM_2022_2030"]
+data_values = [
+    [0, 0, 0, 1], [0, 48, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 4, 0, 0],
+    [1, 2, 0, 0], [0, 0, 0, 76], [0, 0, 0, 0], [0, 0, 0, 0], [0, 34, 0, 1],
+    [0, 18, 0, 0], [4, 0, 0, 0], [0, 1, 0, 0], [0, 4, 0, 0], [0, 3, 0, 0],
+    [0, 69, 0, 0], [0, 30, 0, 0], [0, 99, 0, 0], [0, 26, 0, 0], [0, 107, 0, 0],
+    [0, 0, 0, 0], [0, 1, 0, 0], [0, 1, 0, 3], [0, 71, 0, 0], [0, 2, 0, 0],
+    [0, 3, 0, 0], [0, 2, 0, 0], [1, 17, 0, 0], [5, 3, 0, 5], [27, 4, 0, 13],
+    [2, 0, 0, 3], [0, 4, 0, 0], [19, 3, 0, 20], [13, 0, 0, 0], [7, 0, 0, 5],
+    [131, 98, 0, 1], [0, 0, 0, 0], [0, 0, 0, 0], [0, 26, 0, 0], [0, 101, 0, 2],
+    [0, 13, 0, 0], [5, 85, 0, 0], [0, 7, 0, 0], [0, 3, 0, 0], [0, 122, 0, 0],
+    [0, 0, 0, 0], [0, 7, 0, 1], [0, 121, 0, 0], [0, 7, 0, 0], [0, 16, 0, 0],
+    [12, 1, 0, 5], [0, 1, 0, 0], [0, 1, 0, 0], [0, 152, 0, 0], [3, 1, 0, 0],
+    [0, 1, 0, 0], [0, 9, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 1, 0, 0],
+    [22, 3, 0, 0], [0, 3, 0, 0], [0, 4, 0, 0], [0, 0, 0, 0], [0, 104, 0, 0],
+    [0, 1, 0, 0], [0, 0, 0, 0], [0, 3, 0, 0], [0, 1, 0, 0], [0, 4, 0, 0],
+    [0, 6, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0], [0, 137, 0, 0], [0, 53, 0, 1]
+]
+
+df = pd.DataFrame(data_values, columns=columns)
+
+# Create a figure with two subplots: one for histograms and one for boxplot
+fig, axes = plt.subplots(1, 2, figsize=(18, 6))  # 1 row, 2 columns layout
+
+# Plot histograms in the first subplot
+for i, col in enumerate(columns):
+    axes[0].hist(df[col], bins=20, alpha=0.6, label=col)
+axes[0].set_title('Histograms of HTM Values')
+axes[0].set_xlabel('Value')
+axes[0].set_ylabel('Frequency')
+axes[0].legend(title="Columns")
+
+# Plot boxplot in the second subplot
+sns.boxplot(data=df, ax=axes[1])
+axes[1].set_title('Boxplot of HTM Values')
+axes[1].set_ylabel('Value')
+axes[1].tick_params(axis='x', rotation=45)
+
+# Adjust layout and display the figure
+plt.tight_layout()
+plt.show()
