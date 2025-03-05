@@ -10,8 +10,8 @@ df = pd.read_excel(file_path, sheet_name=sheet_name)
 
 # Extract relevant columns
 columns = [
-    "TVC 30˚C 48h", "TVC 30˚C 72h",
-    "TVC 35˚C 48h", "TVC 35˚C 72h",
+    "TSA 30˚C 48h", "TVC 30˚C 120h",
+    "TVC 35˚C 48h", "TVC 35˚C 120h",
     "Blood Agar 37˚C 48h", "Blood Agar 37˚C 120h",
     "R2A Agar 30˚C 48h", "R2A Agar 30˚C 120h"
 ]
